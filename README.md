@@ -1,6 +1,8 @@
 ##### Shodan + ExploitDB
 # SPLOIT
-### Consult and discover exploits for vulnerabilities related to your target
+# Consult and discover exploits for vulnerabilities related to your target
+
+### Install
 
         git clone https://github.com/Ls4ss/Sploit.git
 
