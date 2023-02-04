@@ -1,0 +1,5 @@
+shodan
+cve_searchsploit
+ipcalc
+tqdm
+requests
