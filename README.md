@@ -1,5 +1,5 @@
 ##### Shodan + ExploitDB
-# SPLOIT
+<h1 align="center">SPLOIT</h1>
 
 ### Install
 
