@@ -2,6 +2,10 @@
 # SPLOIT
 ### Consult and discover exploits for vulnerabilities related to your target
 
+        git clone https://github.com/Ls4ss/Sploit.git
+
+        pip3 install -r requirements.txt
+        
 ##### python3 sploit.py -h
         ┌ USAGE: python3 sploit.py <SHODAN_FILTER> <VULN_OPTIONS>
         |
