@@ -2,6 +2,7 @@
 # SPLOIT
 ### Consult and discover exploits for vulnerabilities related to your target
 
+##### python3 sploit -h
         ┌ USAGE: python3 sploit.py <SHODAN_FILTER> <VULN_OPTIONS>
         |
         └── [+] <SHODAN_FILTER>
