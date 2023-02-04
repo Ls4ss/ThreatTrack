@@ -1,6 +1,5 @@
 ##### Shodan + ExploitDB
 # SPLOIT
-# Consult and discover exploits for vulnerabilities related to your target
 
 ### Install
 
