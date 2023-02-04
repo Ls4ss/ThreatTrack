@@ -6,6 +6,9 @@
 
         pip3 install -r requirements.txt
         
+##### Get your API Shodan - https://account.shodan.io/
+##### Insert your API Shodan in API.txt
+
 ##### python3 sploit.py -h
         ┌ USAGE: python3 sploit.py <SHODAN_FILTER> <VULN_OPTIONS>
         |
