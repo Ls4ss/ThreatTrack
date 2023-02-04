@@ -1,4 +1,6 @@
-# Sploit
+# Shodan + ExploitDB = SPLOIT
+## Consult and discover exploits for vulnerabilities related to your target
+
         ┌ USAGE: python3 sploit.py <SHODAN_FILTER> <VULN_OPTIONS>
         |
         └── [+] <SHODAN_FILTER>
