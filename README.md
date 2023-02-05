@@ -17,6 +17,15 @@
 
         pip3 install -r requirements.txt
         
+#### Requirements
+        
++ shodan
++ cve_searchsploit
++ ipcalc
++ tqdm
++ requests
++ progressbar2
+        
 ##### Get your API Shodan - https://account.shodan.io/
 ##### Insert your API Shodan in API.txt
 
