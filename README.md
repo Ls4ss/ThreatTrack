@@ -2,6 +2,7 @@
 <h1 align="center">SPLOIT</h1>
 
 <img width="1000" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/help.png>
+<img width="1000" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/xpl.png>
 
 ### Install
 
