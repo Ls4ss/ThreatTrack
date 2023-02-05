@@ -9,7 +9,7 @@
 <img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/help-1.png>
 
 ### Example
-<img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/xpl.png>
+<img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/xpl-1.png>
 
 ### Install
 
