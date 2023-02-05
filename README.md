@@ -1,7 +1,14 @@
 <h6 align="center">Shodan + ExploitDB</h6>
 <h1 align="center">SPLOIT</h1>
 
+[Help](https://link-url-here.org)
+[Example](https://link-url-here.org)
+[Install](https://link-url-here.org)
+
+### Help
 <img width="1000" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/help.png>
+
+### Example
 <img width="1000" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/xpl.png>
 
 ### Install
