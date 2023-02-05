@@ -25,6 +25,7 @@
 + tqdm
 + requests
 + progressbar2
++ git
         
 ##### Get your API Shodan - https://account.shodan.io/
 ##### Insert your API Shodan in API.txt
