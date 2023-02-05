@@ -3,3 +3,4 @@ cve_searchsploit
 ipcalc
 tqdm
 requests
+progressbar2
