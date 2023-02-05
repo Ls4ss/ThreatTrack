@@ -1,5 +1,5 @@
 <h6 align="center">Shodan + ExploitDB</h6>
-<h1 align="center"><img width="50" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/logo.png>SPLOIT</h1>
+<h1 align="center"><img width="40" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/logo.png>SPLOIT</h1>
 
 ### [Help](https://github.com/Ls4ss/Sploit/blob/main/README.md#help-1)
 ### [Example](https://github.com/Ls4ss/Sploit/blob/main/README.md#example-1)
