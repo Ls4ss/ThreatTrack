@@ -6,10 +6,10 @@
 ### [Install](https://github.com/Ls4ss/Sploit/blob/main/README.md#install-1)
 
 ### Help
-<img align="center" width="700" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/help.png>
+<img width="700" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/help.png>
 
 ### Example
-<img width="1000" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/xpl.png>
+<img width="700" src=https://raw.githubusercontent.com/Ls4ss/Sploit/main/example/xpl.png>
 
 ### Install
 
