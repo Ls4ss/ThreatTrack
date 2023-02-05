@@ -6,7 +6,7 @@
 ### [Install](https://github.com/Ls4ss/ThreatTrack/blob/main/README.md#install-1)
 
 ### Help
-<img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/help.png>
+<img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/help-1.png>
 
 ### Example
 <img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/xpl.png>
