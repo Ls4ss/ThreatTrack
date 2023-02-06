@@ -6,8 +6,9 @@ import cve_searchsploit as cs
 import traceback
 import sys
 
-with open("API.txt", "r") as API:
-        SHODAN_API_KEY = API.read()
+APIKEY = open("API.txt", "r")
+SHODAN_API_KEY = APIKEY.read().splitlines()
+
 api = shodan.Shodan(SHODAN_API_KEY)
 nvdurl = "https://services.nvd.nist.gov/rest/json/cves/2.0?cveId="
 try:
