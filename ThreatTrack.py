@@ -4,8 +4,9 @@ import shodan
 from tqdm import tqdm
 import ipcalc
 
-with open("API.txt", "r") as API:
-        SHODAN_API_KEY = API.read()
+APIKEY = open("API.txt", "r")
+SHODAN_API_KEY = APIKEY.read().splitlines()
+
 api = shodan.Shodan(SHODAN_API_KEY)
 
 def options():
