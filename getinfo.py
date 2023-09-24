@@ -32,7 +32,8 @@ banner = f"""
         ┗━━ [+] <VULN_OPTIONS>
         ┃    ┗━ [!] --cvss  ━  CVE Severity Details
         ┃    ┃   ┗━  CVSS Filters: ━ Ex.: --cvss:critical, --cvss:high, --cvss:medium, --cvss:low
-        ┃    ┗━  --xdb   ━  Search for Exploits in ExploitDB
+        ┃    ┗━ [!] --xdb   ━  Search for Exploits in ExploitDB
+        ┃    ┃   ┗━  --xdbupdate  ━  Refreshing ExploitDB (root required)
         ┃    ┗━  --nvd   ━  Search references in NVD
         ┃    ┗━  --git   ━  Search PoCs in GitHub
         ┃    ┗━  --cve   ━  Only CVE's
@@ -52,8 +53,12 @@ parser = argparse.ArgumentParser(description=banner, formatter_class=argparse.Ra
 # Use nargs=argparse.REMAINDER para capturar todos os argumentos restantes
 parser.add_argument('others_args', nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+parser.add_argument("--xdbupdate", action="store_true", help=argparse.SUPPRESS)
 # Analisar os argumentos da linha de comando
 args = parser.parse_args()
+
+def get_xdb_update():
+    cs.update_db()
 
 def get_shodan_api_key():
     with open("API.txt", "r") as api_file:
