@@ -19,12 +19,13 @@
         
 #### Requirements
         
++ time
 + shodan
 + cve_searchsploit
 + ipcalc
-+ tqdm
++ ipaddress
 + requests
-+ git
++ argparse
         
 ##### Get your API Shodan - https://account.shodan.io/
 ##### Insert your API Shodan in API.txt
