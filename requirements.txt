@@ -1,5 +1,7 @@
+time
 shodan
 cve_searchsploit
 ipcalc
-tqdm
+ipaddress
 requests
+argparse
