@@ -83,6 +83,9 @@ def main():
                 elif shodan_query[0:7] == "domain:":
                         domain = shodan_query[7:]
                         get_domain(domain)
+                elif shodan_query == "--xdbupdate":
+                        getinfo.get_xdb_update()
+
                 else:
                         loopcount = 1
                         page = 1
