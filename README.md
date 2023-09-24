@@ -13,7 +13,7 @@
 
 ### Install
 
-        git clone https://github.com/Ls4ss/ThreatTrack.git
+        git clone https://github.com/detectibr/ThreatTrack.git
 
         pip3 install -r requirements.txt
         
