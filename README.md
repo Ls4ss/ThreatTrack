@@ -1,5 +1,5 @@
 <h6 align="center">Shodan + ExploitDB + GitHub + NVD</h6>
-<h1 align="center"><img width="40" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/logo.png>ThreatTrack</h1>
+<img width="40" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/logo.png align="center">ThreatTrack
 
 
 ### Help
