@@ -3,7 +3,7 @@
 
 
 ### Help
-<img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/tt_help.png>
+<img width="700" src=https://raw.githubusercontent.com/Ls4ss/ThreatTrack/main/example/tt_help.png align="center">
 
 
 ### Install
