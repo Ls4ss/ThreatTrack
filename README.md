@@ -1,4 +1,4 @@
-This Python project aims to provide a tool for analyzing the security of IPs and Domains using the Shodan.io API. The script collects information about IPs and Domains, identifies potential vulnerabilities related to the versions of technologies mapped by Shodan, and queries CVEs in the NVD (https://nvd.nist.gov/) and ExploitDB (https://www.exploit-db.com/) databases.
+This Python project aims to provide a tool for analyzing the security of IPs and Domains using the Shodan.io API. The script collects information about IPs and Domains, identifies potential vulnerabilities related to the versions of technologies mapped by Shodan, and queries CVEs in the NVD (https://nvd.nist.gov/) and ExploitDB (https://www.exploit-db.com/) databases. Additionally, it searches for Proof of Concepts (PoCs) of the CVEs on GitHub.
 
 ### Features
 Collection of information about IPs and Domains using the Shodan.io API.
