@@ -6,7 +6,7 @@ import argparse
 import sys
    
 banner = f"""
-        ┏━━━━━━━━━━━━━━━━━━━━━[ Dev. by: Lucas S. (Ls4ss) - https://me.log.br ]━━━━━━━━━━━━━━━━━━━━━\n        ┃
+        ┏━━━━━━━━━━━━━━━━━━━━━[ Dev. by: Lucas S. (Ls4ss) - https://lucassouza.io ]━━━━━━━━━━━━━━━━━━━━━\n        ┃
         ┏━ USAGE: python3 {sys.argv[0]} <FILTER> <VULN_OPTIONS>
         ┃
         ┗━━ [+] <FILTER>
@@ -38,7 +38,7 @@ banner = f"""
         ┃    ┗━  --git   ━  Search PoCs in GitHub
         ┃    ┗━  --cve   ━  Only CVE's
         ┃
-        ┗━━━━━━━━━━━━━━━━━━━━━[ Dev. by: Lucas S. (Ls4ss) - https://me.log.br ]━━━━━━━━━━━━━━━━━━━━━
+        ┗━━━━━━━━━━━━━━━━━━━━━[ Dev. by: Lucas S. (Ls4ss) - https://lucassouza.io ]━━━━━━━━━━━━━━━━━━━━━
                         """   
 def get_banner():
     print(banner)
