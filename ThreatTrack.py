@@ -24,8 +24,7 @@ def shodan_search(page, loopcount, shodan_query):
         total = len(query['matches'])
         if total == 0:
                     print(f"\n           [!] Try another query :)")
-                    #options()
-                    sys.exit()
+                    sys.exit(0)
         print(f"\n        ┏━ [!] Found {total} results for this query")
         print("        ┗━ [!] This query will consume your API credits")
         for x in range(total):
@@ -36,7 +35,7 @@ def shodan_search(page, loopcount, shodan_query):
                 loopcount = loopcount + 1
                 shodan_search(page, loopcount, shodan_query)
         else:
-                sys.exit(1)
+                sys.exit(0)
 
 def get_domain(domain):
         shodan_get_domain = api.dns.domain_info(domain=domain, history=True, type=None, page=1)
