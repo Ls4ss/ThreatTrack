@@ -28,7 +28,7 @@ def shodan_search(page, loopcount, shodan_query):
                     sys.exit()
         print(f"\n        ┏━ [!] Found {total['total']} results for this query")
         print("        ┗━ [!] This query will consume your API credits")
-        for x in range(total['total']):
+        for x in range(len(query['matches'])):
                 ip = query['matches'][x]['ip_str']
                 getinfo.main(ip)
         if loopcount != total[total]:
