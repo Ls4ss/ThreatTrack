@@ -21,17 +21,17 @@ def calcr(ip):
 # FUNCAO PARA UTILIZAR DEMAIS CONSULTAS DO SHODAN
 def shodan_search(page, loopcount, shodan_query):
         query = api.search(query=shodan_query, page=page)
-        total = api.count(query=shodan_query)
-        if total['total'] == 0:
+        total = len(query['matches'])
+        if total == 0:
                     print(f"\n           [!] IP's not found for this query, check the filter used")
                     #options()
                     sys.exit()
-        print(f"\n        ┏━ [!] Found {total['total']} results for this query")
+        print(f"\n        ┏━ [!] Found {total} results for this query")
         print("        ┗━ [!] This query will consume your API credits")
-        for x in range(len(query['matches'])):
+        for x in range(total):
                 ip = query['matches'][x]['ip_str']
                 getinfo.main(ip)
-        if loopcount != total[total]:
+        if loopcount != total:
                 page = page + 1
                 loopcount = loopcount + 1
                 shodan_search(page, loopcount, shodan_query)
