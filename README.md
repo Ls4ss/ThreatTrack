@@ -22,7 +22,7 @@ This Python project aims to provide a tool for analyzing the security of IPs and
 
         pip3 install -r requirements.txt
 
-        pytho3 ThreatTrack.py --xdbupdate
+        python3 ThreatTrack.py --xdbupdate
         
 #### Requirements
         
