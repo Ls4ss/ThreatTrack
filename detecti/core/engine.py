@@ -30,6 +30,7 @@ from detecti.modules.crtsh import CrtshModule
 from detecti.modules.exploitdb import ExploitDBModule
 from detecti.modules.nvd import NVDModule
 from detecti.modules.reverse_whois import ReverseWhoisModule
+from detecti.modules.securitytrails import SecurityTrailsModule
 from detecti.modules.shodan import ShodanModule
 from detecti.utils.http import AsyncHTTPClient, http_client
 
@@ -60,6 +61,7 @@ class ThreatTrackEngine:
         "censys": CensysModule,
         "crtsh": CrtshModule,
         "reverse_whois": ReverseWhoisModule,
+        "securitytrails": SecurityTrailsModule,
         "nvd": NVDModule,
         "exploitdb": ExploitDBModule,
     }

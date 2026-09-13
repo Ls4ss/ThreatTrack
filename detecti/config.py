@@ -99,6 +99,11 @@ class Settings(BaseSettings):
         validation_alias="WHOISFREAKS_API_KEY",
         description="WhoisFreaks API key for reverse WHOIS",
     )
+    securitytrails_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias="SECURITYTRAILS_API_KEY",
+        description="SecurityTrails API key",
+    )
     github_token: Optional[str] = Field(
         default=None,
         validation_alias="GITHUB_TOKEN",
@@ -165,6 +170,9 @@ class Settings(BaseSettings):
 
         raw_whois = self.whoisfreaks_api_key or os.getenv("WHOISFREAKS_API_KEY")
         self.whoisfreaks_api_key = sanitize_api_key(raw_whois)
+
+        raw_sectrails = self.securitytrails_api_key or os.getenv("SECURITYTRAILS_API_KEY")
+        self.securitytrails_api_key = sanitize_api_key(raw_sectrails)
 
         raw_github = self.github_token or os.getenv("GITHUB_TOKEN")
         self.github_token = sanitize_api_key(raw_github)
