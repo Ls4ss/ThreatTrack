@@ -295,7 +295,27 @@ class ThreatTrackEngine:
                     "tier": "Free OSINT",
                 }
 
-        # 5. ExploitDB / GitHub Token
+        # 5. SecurityTrails
+        if "securitytrails" in active_mod_names:
+            st_mod = self.modules["securitytrails"]
+            if st_mod.is_configured():
+                status_report["securitytrails"] = {
+                    "name": "SecurityTrails",
+                    "configured": True,
+                    "valid": True,
+                    "status": "Active (API Key)",
+                    "tier": "Standard API",
+                }
+            else:
+                status_report["securitytrails"] = {
+                    "name": "SecurityTrails",
+                    "configured": False,
+                    "valid": False,
+                    "status": "Not Configured (Bypassed)",
+                    "tier": "None",
+                }
+
+        # 6. ExploitDB / GitHub Token
         if "exploitdb" in active_mod_names:
             from config import is_placeholder_key
             has_gh = bool(settings.github_token and not is_placeholder_key(settings.github_token))
