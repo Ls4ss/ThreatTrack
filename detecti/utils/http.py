@@ -38,12 +38,15 @@ class AsyncHTTPClient:
 
         self._headers = default_headers
         self._client: Optional[httpx.AsyncClient] = None
-        self._semaphore = asyncio.Semaphore(self.concurrency_limit)
+        self._semaphore: Optional[asyncio.Semaphore] = None
         self._domain_locks: Dict[str, asyncio.Lock] = {}
         self._domain_last_request: Dict[str, float] = {}
 
     async def get_client(self) -> httpx.AsyncClient:
         """Get or initialize the underlying httpx.AsyncClient."""
+        if self._semaphore is None:
+            self._semaphore = asyncio.Semaphore(self.concurrency_limit)
+            
         if self._client is None or self._client.is_closed:
             self._client = httpx.AsyncClient(
                 timeout=httpx.Timeout(self.timeout, connect=10.0),

@@ -419,18 +419,6 @@ def config_check_command(
 
 
 
-    print_section_header("API Credentials Status")
-    engine = ThreatTrackEngine()
-    api_statuses = asyncio.run(engine.verify_environment_apis())
-    for mod_key, info in api_statuses.items():
-        name = info.get("name", mod_key.title())
-        status = info.get("status", "Unknown")
-        status_styled = (
-            f"[bold green]{status}[/bold green]"
-            if info.get("valid")
-            else (f"[bold red]{status}[/bold red]" if info.get("configured") else f"[dim]{status}[/dim]")
-        )
-        console.print(f" • [cyan]{name}:[/cyan] {status_styled}")
 
 
 @hound_app.command("start")
