@@ -264,6 +264,18 @@ def scan_command(
             try:
                 progress.update(task_id, description=f"[bold cyan]Storing results in SQLite database ({final_db_name})...")
                 db_manager.store_scan_result(result)
+                
+                # Lazy Summary: Sync the CLI Executive Summary with the Database Post-Gating metrics
+                stats = db_manager.get_summary_stats()
+                if result.summary:
+                    result.summary.total_hosts_count = stats.get('total_ips', result.summary.total_hosts_count)
+                    result.summary.subdomains_count = stats.get('total_subdomains', result.summary.subdomains_count)
+                    # For associated domains in UI we refer to total_domains
+                    result.summary.associated_domains_count = stats.get('total_domains', result.summary.associated_domains_count)
+                    result.summary.open_ports_count = stats.get('open_services', result.summary.open_ports_count)
+                    result.summary.vulnerabilities_count = stats.get('total_vulnerabilities', result.summary.vulnerabilities_count)
+                    result.summary.cisa_kev_count = stats.get('cisa_kev_count', result.summary.cisa_kev_count)
+
                 print_success(f"Scan results stored in database: [bold underline]{db_manager.db_path.resolve() if hasattr(db_manager.db_path, 'resolve') else db_manager.db_path}[/bold underline]")
             except Exception as e:
                 print_error(f"Failed to store results in database: {e}")

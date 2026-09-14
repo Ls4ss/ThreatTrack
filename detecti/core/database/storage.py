@@ -89,6 +89,22 @@ class DatabaseManager:
             except Exception:
                 pass
 
+            # Auto-migrate: ensure metadata column exists in subdomains table for WAF bypass tags
+            try:
+                sub_cols = [row[1] for row in conn.execute("PRAGMA table_info(subdomains)").fetchall()]
+                if "metadata" not in sub_cols:
+                    conn.execute("ALTER TABLE subdomains ADD COLUMN metadata TEXT")
+            except Exception:
+                pass
+            # Auto-migrate: ensure resolution_type exists in subdomain_ips table
+            try:
+                sub_ip_cols = [row[1] for row in conn.execute("PRAGMA table_info(subdomain_ips)").fetchall()]
+                if "resolution_type" not in sub_ip_cols:
+                    conn.execute("ALTER TABLE subdomain_ips ADD COLUMN resolution_type TEXT DEFAULT 'RESOLVES_TO'")
+            except Exception:
+                pass
+
+
             # Auto-clean: deduplicate any existing redundant services per (ip_id, port, protocol)
             self._deduplicate_services(conn)
                 
@@ -224,7 +240,7 @@ class DatabaseManager:
         subdomain_map = {}
         
         # Helper to register any candidate subdomain
-        def _register_subdomain_candidate(raw_name: str) -> None:
+        def _register_subdomain_candidate(raw_name: str, meta: Optional[Dict] = None) -> None:
             if not raw_name:
                 return
             cand = raw_name.strip().lower()
@@ -276,12 +292,20 @@ class DatabaseManager:
                             INSERT INTO subdomains (id, domain_id, name)
                             VALUES (?, ?, ?)
                         """, (subdomain_id, domain_id, cand))
+                    
+                    if meta:
+                        try:
+                            meta_json = json.dumps(meta)
+                            conn.execute("UPDATE subdomains SET metadata = ? WHERE id = ?", (meta_json, subdomain_id))
+                        except Exception:
+                            pass
+
                     subdomain_map[cand] = subdomain_id
 
         # 1. Register subdomains from FindingType.SUBDOMAIN, ASSOCIATED_DOMAIN and targets
         for finding in findings:
             if finding.type in (FindingType.SUBDOMAIN, FindingType.ASSOCIATED_DOMAIN) and finding.value:
-                _register_subdomain_candidate(finding.value)
+                _register_subdomain_candidate(finding.value, finding.metadata)
             if finding.target:
                 _register_subdomain_candidate(finding.target)
             if finding.type == FindingType.HOST_INFO and finding.host_info:
@@ -295,10 +319,10 @@ class DatabaseManager:
             for host in hosts:
                 if host.hostnames:
                     for hname in host.hostnames:
-                        _register_subdomain_candidate(hname)
+                        _register_subdomain_candidate(hname, host.metadata if host.metadata.get("waf_bypassed_domains") and hname in host.metadata["waf_bypassed_domains"] else None)
                 if host.domains:
                     for dname in host.domains:
-                        _register_subdomain_candidate(dname)
+                        _register_subdomain_candidate(dname, host.metadata if host.metadata.get("waf_bypassed_domains") and dname in host.metadata["waf_bypassed_domains"] else None)
         
         return subdomain_map
 
@@ -547,10 +571,13 @@ class DatabaseManager:
                         if hname_clean.startswith("*."):
                             hname_clean = hname_clean[2:]
                         if hname_clean in subdomain_map:
+                            res_type = "RESOLVES_TO" if any("dns" in s.lower() and "historical" not in s.lower() for s in getattr(host, "sources", [])) else "IPS_HISTORY"
                             conn.execute("""
-                                INSERT OR IGNORE INTO subdomain_ips (subdomain_id, ip_id)
-                                VALUES (?, ?)
-                            """, (subdomain_map[hname_clean], ip_id))
+                                INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
+                                VALUES (?, ?, ?)
+                                ON CONFLICT (subdomain_id, ip_id) DO UPDATE SET 
+                                resolution_type = CASE WHEN excluded.resolution_type = 'RESOLVES_TO' THEN 'RESOLVES_TO' ELSE subdomain_ips.resolution_type END
+                            """, (subdomain_map[hname_clean], ip_id, res_type))
             
             # Map specific authoritative DNS resolutions & finding associations (subdomain -> IP)
             for finding in result.findings:
@@ -565,10 +592,13 @@ class DatabaseManager:
                             if hname_clean.startswith("*."):
                                 hname_clean = hname_clean[2:]
                             if hname_clean in subdomain_map:
+                                res_type = "RESOLVES_TO" if ("dns" in getattr(finding, "source", "").lower() and "historical" not in getattr(finding, "source", "").lower()) else "IPS_HISTORY"
                                 conn.execute("""
-                                    INSERT OR IGNORE INTO subdomain_ips (subdomain_id, ip_id)
-                                    VALUES (?, ?)
-                                """, (subdomain_map[hname_clean], target_ip_id))
+                                    INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
+                                    VALUES (?, ?, ?)
+                                    ON CONFLICT (subdomain_id, ip_id) DO UPDATE SET 
+                                    resolution_type = CASE WHEN excluded.resolution_type = 'RESOLVES_TO' THEN 'RESOLVES_TO' ELSE subdomain_ips.resolution_type END
+                                """, (subdomain_map[hname_clean], target_ip_id, res_type))
                     
                     # 2. Subdomain finding with explicit host_ip
                     if finding.type == FindingType.SUBDOMAIN and finding.value and finding.host_ip == hip:
@@ -576,10 +606,13 @@ class DatabaseManager:
                         if sub_val.startswith("*."):
                             sub_val = sub_val[2:]
                         if sub_val in subdomain_map:
+                            res_type = "RESOLVES_TO" if ("dns" in getattr(finding, "source", "").lower() and "historical" not in getattr(finding, "source", "").lower()) else "IPS_HISTORY"
                             conn.execute("""
-                                INSERT OR IGNORE INTO subdomain_ips (subdomain_id, ip_id)
-                                VALUES (?, ?)
-                            """, (subdomain_map[sub_val], target_ip_id))
+                                INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
+                                VALUES (?, ?, ?)
+                                ON CONFLICT (subdomain_id, ip_id) DO UPDATE SET 
+                                resolution_type = CASE WHEN excluded.resolution_type = 'RESOLVES_TO' THEN 'RESOLVES_TO' ELSE subdomain_ips.resolution_type END
+                            """, (subdomain_map[sub_val], target_ip_id, res_type))
 
             conn.commit()
 
@@ -927,8 +960,9 @@ class DatabaseManager:
 
                     # Ensure direct link between FQDN and IP
                     conn.execute("""
-                        INSERT OR IGNORE INTO subdomain_ips (subdomain_id, ip_id)
-                        VALUES (?, ?)
+                        INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
+                        VALUES (?, ?, 'RESOLVES_TO')
+                        ON CONFLICT (subdomain_id, ip_id) DO UPDATE SET resolution_type = 'RESOLVES_TO'
                     """, (sub_id, cur_ip_id))
 
                 # 4. If DNS resolution was offline/empty, fallback to any existing database links
@@ -1219,7 +1253,7 @@ class DatabaseManager:
                                         d_row = conn.execute("SELECT id FROM domains LIMIT 1").fetchone()
                                         d_id = d_row[0] if d_row else None
                                         conn.execute("INSERT OR IGNORE INTO subdomains (id, domain_id, name) VALUES (?, ?, ?)", (s_id, d_id, clean_candidate))
-                                    conn.execute("INSERT OR IGNORE INTO subdomain_ips (subdomain_id, ip_id) VALUES (?, ?)", (s_id, ip_id))
+                                    conn.execute("INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type) VALUES (?, ?, 'RESOLVES_TO') ON CONFLICT (subdomain_id, ip_id) DO UPDATE SET resolution_type = 'RESOLVES_TO'", (s_id, ip_id))
                             except Exception:
                                 pass
 

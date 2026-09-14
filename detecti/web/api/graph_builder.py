@@ -256,8 +256,17 @@ class GraphBuilder:
         }
 
         # Query all subdomains and their resolved IPs
-        cursor_subs = conn.execute("""
-            SELECT s.id, s.name, s.domain_id, d.name as domain_name, si.ip_id, ip.ip
+        has_metadata = False
+        try:
+            sub_cols = [r[1] for r in conn.execute("PRAGMA table_info(subdomains)").fetchall()]
+            has_metadata = "metadata" in sub_cols
+        except Exception:
+            pass
+
+        meta_select = "s.metadata" if has_metadata else "NULL as metadata"
+
+        cursor_subs = conn.execute(f"""
+            SELECT s.id, s.name, s.domain_id, d.name as domain_name, si.ip_id, ip.ip, {meta_select}
             FROM subdomains s
             JOIN domains d ON s.domain_id = d.id
             LEFT JOIN subdomain_ips si ON s.id = si.subdomain_id
@@ -269,13 +278,25 @@ class GraphBuilder:
         domain_to_ips: Dict[str, set] = {}
         subdomain_info_map: Dict[str, Dict] = {}
         domain_resolved_ips_map: Dict[str, list] = {}
+        domain_waf_map: Dict[str, bool] = {}
         
-        for sub_id, sub_name, domain_id, domain_name, ip_id, ip_addr in cursor_subs.fetchall():
+        import json
+        for sub_id, sub_name, domain_id, domain_name, ip_id, ip_addr, metadata_raw in cursor_subs.fetchall():
+            is_waf = False
+            if metadata_raw:
+                try:
+                    meta_dict = json.loads(metadata_raw)
+                    is_waf = meta_dict.get("is_waf_bypass", False)
+                except Exception:
+                    pass
+
             is_apex = (sub_name.strip().lower() == domain_name.strip().lower())
             if ip_id:
                 subdomain_to_ips.setdefault(sub_id, set()).add(ip_id)
                 if is_apex:
                     domain_to_ips.setdefault(domain_id, set()).add(ip_id)
+                    if is_waf:
+                        domain_waf_map[domain_id] = True
                     # Track domain resolved IPs (apex)
                     domain_ips_list = domain_resolved_ips_map.setdefault(domain_id, [])
                     if not any(r["id"] == f"ip_{ip_id}" for r in domain_ips_list):
@@ -288,9 +309,13 @@ class GraphBuilder:
                         "name": sub_name,
                         "domain_id": domain_id,
                         "domain_name": domain_name,
+                        "is_waf_bypass": is_waf,
                         "ips": [],
                         "resolved_ips": []
                     }
+                elif is_waf:
+                    subdomain_info_map[sub_id]["is_waf_bypass"] = True
+
                 if ip_addr and ip_addr not in subdomain_info_map[sub_id]["ips"]:
                     subdomain_info_map[sub_id]["ips"].append(ip_addr)
                     subdomain_info_map[sub_id]["resolved_ips"].append({"id": f"ip_{ip_id}", "ip": ip_addr})
@@ -340,18 +365,23 @@ class GraphBuilder:
             if domain_id in domains_to_spawn:
                 dname_lower = domain_name.lower()
                 domain_subs = [s for s in all_subdomains if s.get("domain_id") == domain_id or s.get("domain_name", "").lower() == dname_lower]
+                is_waf = domain_waf_map.get(domain_id, False)
                 node_data = {
                     "id": f"dom_{domain_id}",
-                    "label": domain_name,
+                    "label": f"🛡️ [Origin] {domain_name}" if is_waf else domain_name,
                     "type": "domain",
                     "name": domain_name,
                     "related_subdomains": domain_subs,
                     "subdomain_count": len(domain_subs),
                     "resolved_ips": domain_resolved_ips_map.get(domain_id, []),
                     "is_target": (dname_lower in explicit_targets),
-                    "is_root": False
+                    "is_root": False,
+                    "is_waf_bypass": is_waf
                 }
-                nodes.append({"data": node_data, "classes": "is-target" if node_data["is_target"] else ""})
+                classes = []
+                if node_data["is_target"]: classes.append("is-target")
+                if is_waf: classes.append("is-waf-bypass")
+                nodes.append({"data": node_data, "classes": " ".join(classes)})
                 
                 if root_target_node:
                     if domain_id in explicit_domains:
@@ -364,18 +394,23 @@ class GraphBuilder:
                 sname_lower = sub_info["name"].lower()
                 parent_dom_id = sub_info["domain_id"]
                 sub_related = [s for s in all_subdomains if s.get("domain_id") == parent_dom_id and s.get("id") != sub_id]
+                is_waf = sub_info.get("is_waf_bypass", False)
                 node_data = {
                     "id": f"sub_{sub_id}",
-                    "label": sub_info["name"],
+                    "label": f"🛡️ [Origin] {sub_info['name']}" if is_waf else sub_info["name"],
                     "type": "subdomain",
                     "name": sub_info["name"],
                     "domain_id": parent_dom_id,
                     "domain_name": sub_info["domain_name"],
                     "resolved_ips": sub_info.get("resolved_ips", []),
                     "related_subdomains": sub_related,
-                    "is_target": (sname_lower in explicit_targets)
+                    "is_target": (sname_lower in explicit_targets),
+                    "is_waf_bypass": is_waf
                 }
-                nodes.append({"data": node_data, "classes": "is-target" if node_data["is_target"] else ""})
+                classes = []
+                if node_data["is_target"]: classes.append("is-target")
+                if is_waf: classes.append("is-waf-bypass")
+                nodes.append({"data": node_data, "classes": " ".join(classes)})
                 
                 parent_dom_id = sub_info["domain_id"]
                 edges.append({"data": {"id": f"e_dom_sub_{sub_id}", "source": f"dom_{parent_dom_id}", "target": f"sub_{sub_id}", "label": "HAS_SUBDOMAIN"}})
@@ -541,15 +576,28 @@ class GraphBuilder:
             }
 
         cursor_fqdns = conn.execute("""
-            SELECT DISTINCT si.ip_id, s.name
+            SELECT DISTINCT si.ip_id, s.name, si.resolution_type, si.subdomain_id, s.domain_id
             FROM subdomain_ips si
             JOIN subdomains s ON si.subdomain_id = s.id
             ORDER BY LENGTH(s.name) ASC, s.name ASC
         """)
         ip_to_fqdns: Dict[str, List[str]] = {}
-        for ip_id, fqdn in cursor_fqdns.fetchall():
+        sub_res_map = {}
+        dom_res_map = {}
+        for ip_id, fqdn, res_type, sub_id, dom_id in cursor_fqdns.fetchall():
             if fqdn:
                 ip_to_fqdns.setdefault(str(ip_id), []).append(fqdn)
+            rt = res_type or "RESOLVES_TO"
+            sub_res_map[(str(sub_id), str(ip_id))] = rt
+            
+            # For domains (apex), if this is an apex domain, dom_id will be mapped
+            # Wait, any subdomain belonging to dom_id resolving to ip_id could map. We only want apex.
+            # So let's just keep track of best resolution type for a domain to an IP.
+            # Active beats historical.
+            k = (str(dom_id), str(ip_id))
+            if k not in dom_res_map or rt == "RESOLVES_TO":
+                dom_res_map[k] = rt
+
         
         fqdn_set = spawned_fqdn_ids or set()
         ips_resolved_by_visible_fqdns = set()
@@ -637,7 +685,8 @@ class GraphBuilder:
                 for ip_id in ip_ids:
                     ip_str = ip_id_to_str.get(str(ip_id), "")
                     if True:
-                        edges.append({"data": {"id": f"e_sub_ip_{sub_id}_{ip_id}", "source": sub_node_id, "target": f"ip_{ip_id}", "label": "RESOLVES_TO"}})
+                        rtype = sub_res_map.get((str(sub_id), str(ip_id)), "RESOLVES_TO")
+                        edges.append({"data": {"id": f"e_sub_ip_{sub_id}_{ip_id}", "source": sub_node_id, "target": f"ip_{ip_id}", "label": rtype}})
 
         for dom_id, ip_ids in domain_to_ips.items():
             dom_node_id = f"dom_{dom_id}"
@@ -646,7 +695,8 @@ class GraphBuilder:
                 for ip_id in ip_ids:
                     ip_str = ip_id_to_str.get(str(ip_id), "")
                     if True:
-                        edges.append({"data": {"id": f"e_dom_ip_{dom_id}_{ip_id}", "source": dom_node_id, "target": f"ip_{ip_id}", "label": "RESOLVES_TO"}})
+                        rtype = dom_res_map.get((str(dom_id), str(ip_id)), "RESOLVES_TO")
+                        edges.append({"data": {"id": f"e_dom_ip_{dom_id}_{ip_id}", "source": dom_node_id, "target": f"ip_{ip_id}", "label": rtype}})
 
         # Embed all discovered Host IPs inside root_target_node for instant inspector access
         if root_target_node:

@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS ip_addresses (
 CREATE TABLE IF NOT EXISTS subdomain_ips (
     subdomain_id TEXT NOT NULL,
     ip_id TEXT NOT NULL,
+    resolution_type TEXT DEFAULT 'RESOLVES_TO',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (subdomain_id, ip_id),
     FOREIGN KEY (subdomain_id) REFERENCES subdomains(id),
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS subdomain_ips (
 CREATE TABLE IF NOT EXISTS services (
     id TEXT PRIMARY KEY,
     ip_id TEXT NOT NULL,
+    resolution_type TEXT DEFAULT 'RESOLVES_TO',
     port INTEGER NOT NULL,
     protocol TEXT DEFAULT 'tcp',
     service_name TEXT,
