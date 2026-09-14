@@ -436,6 +436,12 @@ class ThreatTrackEngine:
                 self._notify("reverse_whois", f"Performing Reverse WHOIS lookup for {query_whois}...")
                 recon_tasks.append(self.modules["reverse_whois"].run(query_whois, context))
 
+            # 5. SecurityTrails
+            if target_type in ("domain", "ip") and "securitytrails" in active_mod_names:
+                st_target = root_domain or clean_target if target_type == "domain" else clean_target
+                self._notify("securitytrails", f"Querying SecurityTrails for {st_target}...")
+                recon_tasks.append(self.modules["securitytrails"].run(st_target, context))
+
         if recon_tasks:
             recon_results = await asyncio.gather(*recon_tasks, return_exceptions=True)
             for res in recon_results:
