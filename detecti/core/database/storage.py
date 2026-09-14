@@ -571,7 +571,7 @@ class DatabaseManager:
                         if hname_clean.startswith("*."):
                             hname_clean = hname_clean[2:]
                         if hname_clean in subdomain_map:
-                            res_type = "RESOLVES_TO" if any("dns" in s.lower() for s in getattr(host, "sources", [])) else "IPS_HISTORY"
+                            res_type = "RESOLVES_TO" if any("dns" in s.lower() and "historical" not in s.lower() for s in getattr(host, "sources", [])) else "IPS_HISTORY"
                             conn.execute("""
                                 INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
                                 VALUES (?, ?, ?)
@@ -592,7 +592,7 @@ class DatabaseManager:
                             if hname_clean.startswith("*."):
                                 hname_clean = hname_clean[2:]
                             if hname_clean in subdomain_map:
-                                res_type = "RESOLVES_TO" if "dns" in getattr(finding, "source", "").lower() else "IPS_HISTORY"
+                                res_type = "RESOLVES_TO" if ("dns" in getattr(finding, "source", "").lower() and "historical" not in getattr(finding, "source", "").lower()) else "IPS_HISTORY"
                                 conn.execute("""
                                     INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
                                     VALUES (?, ?, ?)
@@ -606,7 +606,7 @@ class DatabaseManager:
                         if sub_val.startswith("*."):
                             sub_val = sub_val[2:]
                         if sub_val in subdomain_map:
-                            res_type = "RESOLVES_TO" if "dns" in getattr(finding, "source", "").lower() else "IPS_HISTORY"
+                            res_type = "RESOLVES_TO" if ("dns" in getattr(finding, "source", "").lower() and "historical" not in getattr(finding, "source", "").lower()) else "IPS_HISTORY"
                             conn.execute("""
                                 INSERT INTO subdomain_ips (subdomain_id, ip_id, resolution_type)
                                 VALUES (?, ?, ?)
