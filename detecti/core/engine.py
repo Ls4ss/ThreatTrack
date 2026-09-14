@@ -509,12 +509,14 @@ class ThreatTrackEngine:
 
             for sub, ips in resolve_results:
                 if ips:
-                    # In an IP scan, if the resolved IPs do NOT include the target IP, this domain has migrated elsewhere
+                    # In an IP scan, if the resolved IPs do NOT include the target IP, this domain has migrated elsewhere or is behind a WAF
                     if is_ip_scan and target_ip_clean and target_ip_clean not in ips:
-                        # Drop foreign domain findings to keep attack surface strict and prevent third-party noise
+                        # Tag it as WAF Bypass / Origin Match instead of dropping
                         for sub_finding in subdomain_finding_refs.get(sub, []):
                             if sub_finding in raw_recon_findings:
-                                raw_recon_findings.remove(sub_finding)
+                                sub_finding.metadata["is_waf_bypass"] = True
+                                # Anchor the finding's host_ip to the TARGET IP (the origin), NOT the CDN IP!
+                                sub_finding.host_ip = target_ip_clean
                         continue
 
                     for ip in ips:
@@ -726,10 +728,18 @@ class ThreatTrackEngine:
                 elif f.type == FindingType.SUBDOMAIN and f.value:
                     if f.value not in host_obj.hostnames:
                         host_obj.hostnames.append(f.value)
+                    if f.metadata.get("is_waf_bypass"):
+                        waf_list = host_obj.metadata.setdefault("waf_bypassed_domains", [])
+                        if f.value not in waf_list:
+                            waf_list.append(f.value)
 
                 elif f.type == FindingType.ASSOCIATED_DOMAIN and f.value:
                     if f.value not in host_obj.domains:
                         host_obj.domains.append(f.value)
+                    if f.metadata.get("is_waf_bypass"):
+                        waf_list = host_obj.metadata.setdefault("waf_bypassed_domains", [])
+                        if f.value not in waf_list:
+                            waf_list.append(f.value)
 
         # ----------------------------------------------------
         # Ensure Target Anchor in Hosts Map & Domain Discoveries

@@ -89,6 +89,14 @@ class DatabaseManager:
             except Exception:
                 pass
 
+            # Auto-migrate: ensure metadata column exists in subdomains table for WAF bypass tags
+            try:
+                sub_cols = [row[1] for row in conn.execute("PRAGMA table_info(subdomains)").fetchall()]
+                if "metadata" not in sub_cols:
+                    conn.execute("ALTER TABLE subdomains ADD COLUMN metadata TEXT")
+            except Exception:
+                pass
+
             # Auto-clean: deduplicate any existing redundant services per (ip_id, port, protocol)
             self._deduplicate_services(conn)
                 
@@ -224,7 +232,7 @@ class DatabaseManager:
         subdomain_map = {}
         
         # Helper to register any candidate subdomain
-        def _register_subdomain_candidate(raw_name: str) -> None:
+        def _register_subdomain_candidate(raw_name: str, meta: Optional[Dict] = None) -> None:
             if not raw_name:
                 return
             cand = raw_name.strip().lower()
@@ -276,12 +284,20 @@ class DatabaseManager:
                             INSERT INTO subdomains (id, domain_id, name)
                             VALUES (?, ?, ?)
                         """, (subdomain_id, domain_id, cand))
+                    
+                    if meta:
+                        try:
+                            meta_json = json.dumps(meta)
+                            conn.execute("UPDATE subdomains SET metadata = ? WHERE id = ?", (meta_json, subdomain_id))
+                        except Exception:
+                            pass
+
                     subdomain_map[cand] = subdomain_id
 
         # 1. Register subdomains from FindingType.SUBDOMAIN, ASSOCIATED_DOMAIN and targets
         for finding in findings:
             if finding.type in (FindingType.SUBDOMAIN, FindingType.ASSOCIATED_DOMAIN) and finding.value:
-                _register_subdomain_candidate(finding.value)
+                _register_subdomain_candidate(finding.value, finding.metadata)
             if finding.target:
                 _register_subdomain_candidate(finding.target)
             if finding.type == FindingType.HOST_INFO and finding.host_info:
@@ -295,10 +311,10 @@ class DatabaseManager:
             for host in hosts:
                 if host.hostnames:
                     for hname in host.hostnames:
-                        _register_subdomain_candidate(hname)
+                        _register_subdomain_candidate(hname, host.metadata if host.metadata.get("waf_bypassed_domains") and hname in host.metadata["waf_bypassed_domains"] else None)
                 if host.domains:
                     for dname in host.domains:
-                        _register_subdomain_candidate(dname)
+                        _register_subdomain_candidate(dname, host.metadata if host.metadata.get("waf_bypassed_domains") and dname in host.metadata["waf_bypassed_domains"] else None)
         
         return subdomain_map
 
