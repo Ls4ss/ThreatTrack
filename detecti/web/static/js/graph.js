@@ -2208,6 +2208,16 @@ class EASMDashboard {
                         'border-style': 'solid'
                     }
                 },
+
+                // WAF Bypass Node (Origin IP Discovery)
+                {
+                    selector: 'node.is-waf-bypass',
+                    style: {
+                        'border-color': '#f97316',
+                        'border-width': '4px',
+                        'border-style': 'dashed'
+                    }
+                },
                 
                 // Vulnerability nodes
                 {
