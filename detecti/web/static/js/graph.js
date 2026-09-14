@@ -4945,12 +4945,18 @@ class EASMDashboard {
                 const resolvedIps = data.resolved_ips || [];
 
                 if (resolvedIps.length > 0) {
-                    const ipsBadges = resolvedIps.map(item => `
+                    const ipsBadges = resolvedIps.map(item => {
+                        const isMarked = this.markedTargets.has(item.ip);
+                        const targetColor = isMarked ? '#ef4444' : '#93c5fd';
+                        const targetBg = isMarked ? 'rgba(239, 68, 68, 0.25)' : 'rgba(59, 130, 246, 0.25)';
+                        return `
                         <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #60a5fa; margin-right: 4px; margin-bottom: 2px;">
                             ${item.ip}
+                            <button type="button" class="risk-focus-btn" style="margin: 0; padding: 1px 4px; font-size: 0.65rem; background: ${targetBg}; color: ${targetColor}; border: none; border-radius: 2px; cursor: pointer;" onclick="event.stopPropagation(); window.dashboard.toggleTargetMark('${item.ip}')" title="${isMarked ? 'Remove Target' : 'Set as Target (IP)'}"><i data-lucide="crosshair" style="width: 10px; height: 10px;"></i></button>
                             <button type="button" class="risk-focus-btn" style="margin: 0; padding: 1px 4px; font-size: 0.65rem; background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: none; border-radius: 2px; cursor: pointer;" onclick="event.stopPropagation(); window.dashboard.focusNode('${item.id}')" title="Focus IP in graph"><i data-lucide="focus" style="width: 10px; height: 10px;"></i></button>
                         </span>
-                    `).join('');
+                        `;
+                    }).join('');
 
                     resolvedIpsHtml = `
                     <div class="property">
