@@ -80,6 +80,10 @@ class SecurityTrailsModule(BaseModule):
                 page += 1
             except Exception as e:
                 logger.debug(f"SecurityTrails DSL error on page {page}: {e}")
+                if hasattr(e, "response") and e.response is not None and e.response.status_code == 403:
+                    self.notify("SecurityTrails API: DSL feature requires a commercial subscription (403 Forbidden).")
+                elif page == 1:
+                    self.notify(f"SecurityTrails API error: {e}")
                 break
                 
         return all_domains
