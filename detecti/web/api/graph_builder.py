@@ -576,15 +576,28 @@ class GraphBuilder:
             }
 
         cursor_fqdns = conn.execute("""
-            SELECT DISTINCT si.ip_id, s.name
+            SELECT DISTINCT si.ip_id, s.name, si.resolution_type, si.subdomain_id, s.domain_id
             FROM subdomain_ips si
             JOIN subdomains s ON si.subdomain_id = s.id
             ORDER BY LENGTH(s.name) ASC, s.name ASC
         """)
         ip_to_fqdns: Dict[str, List[str]] = {}
-        for ip_id, fqdn in cursor_fqdns.fetchall():
+        sub_res_map = {}
+        dom_res_map = {}
+        for ip_id, fqdn, res_type, sub_id, dom_id in cursor_fqdns.fetchall():
             if fqdn:
                 ip_to_fqdns.setdefault(str(ip_id), []).append(fqdn)
+            rt = res_type or "RESOLVES_TO"
+            sub_res_map[(str(sub_id), str(ip_id))] = rt
+            
+            # For domains (apex), if this is an apex domain, dom_id will be mapped
+            # Wait, any subdomain belonging to dom_id resolving to ip_id could map. We only want apex.
+            # So let's just keep track of best resolution type for a domain to an IP.
+            # Active beats historical.
+            k = (str(dom_id), str(ip_id))
+            if k not in dom_res_map or rt == "RESOLVES_TO":
+                dom_res_map[k] = rt
+
         
         fqdn_set = spawned_fqdn_ids or set()
         ips_resolved_by_visible_fqdns = set()
@@ -672,7 +685,8 @@ class GraphBuilder:
                 for ip_id in ip_ids:
                     ip_str = ip_id_to_str.get(str(ip_id), "")
                     if True:
-                        edges.append({"data": {"id": f"e_sub_ip_{sub_id}_{ip_id}", "source": sub_node_id, "target": f"ip_{ip_id}", "label": "RESOLVES_TO"}})
+                        rtype = sub_res_map.get((str(sub_id), str(ip_id)), "RESOLVES_TO")
+                        edges.append({"data": {"id": f"e_sub_ip_{sub_id}_{ip_id}", "source": sub_node_id, "target": f"ip_{ip_id}", "label": rtype}})
 
         for dom_id, ip_ids in domain_to_ips.items():
             dom_node_id = f"dom_{dom_id}"
@@ -681,7 +695,8 @@ class GraphBuilder:
                 for ip_id in ip_ids:
                     ip_str = ip_id_to_str.get(str(ip_id), "")
                     if True:
-                        edges.append({"data": {"id": f"e_dom_ip_{dom_id}_{ip_id}", "source": dom_node_id, "target": f"ip_{ip_id}", "label": "RESOLVES_TO"}})
+                        rtype = dom_res_map.get((str(dom_id), str(ip_id)), "RESOLVES_TO")
+                        edges.append({"data": {"id": f"e_dom_ip_{dom_id}_{ip_id}", "source": dom_node_id, "target": f"ip_{ip_id}", "label": rtype}})
 
         # Embed all discovered Host IPs inside root_target_node for instant inspector access
         if root_target_node:

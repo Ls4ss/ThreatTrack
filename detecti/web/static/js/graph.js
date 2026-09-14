@@ -68,7 +68,7 @@ class EASMDashboard {
 
         const sortByResolvedIp = (a, b) => {
             const getIpId = (n) => {
-                const target = n.outgoers('edge[label="RESOLVES_TO"]').targets().first();
+                const target = n.outgoers('edge[label="RESOLVES_TO"], edge[label="IPS_HISTORY"]').targets().first();
                 return target.length > 0 ? target.id() : n.id();
             };
             return getIpId(a).localeCompare(getIpId(b));
@@ -89,7 +89,7 @@ class EASMDashboard {
         };
 
         t2_subdomains.forEach(n => { const pid = getParentId(n, ["HAS_SUBDOMAIN", "MATCHES_DOMAIN"]); if(pid) addChild(pid, n); });
-        t3_ips.forEach(n => { const pid = getParentId(n, ["RESOLVES_TO", "CONTAINS_IP"]); if(pid) addChild(pid, n); });
+        t3_ips.forEach(n => { const pid = getParentId(n, ["RESOLVES_TO", "IPS_HISTORY", "CONTAINS_IP"]); if(pid) addChild(pid, n); });
         t4_services.forEach(n => {
             let parent = n.incomers('node[type="ip"]').first();
             if (parent.length === 0) parent = n.incomers('node').first();
@@ -781,7 +781,7 @@ class EASMDashboard {
                         visitedDomIds.add(edgeData.target);
                     }
                 }
-                if (edgeData.label === 'CONTAINS_IP' || edgeData.label === 'HOSTS_IP' || edgeData.label === 'RESOLVES_TO') {
+                if (edgeData.label === 'CONTAINS_IP' || edgeData.label === 'HOSTS_IP' || edgeData.label === 'RESOLVES_TO' || edgeData.label === 'IPS_HISTORY') {
                     connectedIpIds.add(edgeData.target);
                 }
             });
@@ -804,7 +804,7 @@ class EASMDashboard {
                 if (edgeData.label === 'HAS_SUBDOMAIN' || edgeData.label === 'CONTAINS_SUBDOMAIN') {
                     visitedSubIds.add(edgeData.target);
                 }
-                if (edgeData.label === 'HOSTS_IP' || edgeData.label === 'CONTAINS_IP' || edgeData.label === 'RESOLVES_TO') {
+                if (edgeData.label === 'HOSTS_IP' || edgeData.label === 'CONTAINS_IP' || edgeData.label === 'RESOLVES_TO' || edgeData.label === 'IPS_HISTORY') {
                     connectedIpIds.add(edgeData.target);
                 }
             });
@@ -822,7 +822,7 @@ class EASMDashboard {
 
             const subOut = this.outEdges.get(subId) || [];
             subOut.forEach(edgeData => {
-                if (edgeData.label === 'RESOLVES_TO' || edgeData.label === 'CONTAINS_IP' || edgeData.label === 'HOSTS_IP') {
+                if (edgeData.label === 'RESOLVES_TO' || edgeData.label === 'IPS_HISTORY' || edgeData.label === 'CONTAINS_IP' || edgeData.label === 'HOSTS_IP') {
                     connectedIpIds.add(edgeData.target);
                 }
                 if (edgeData.label === 'HAS_SUBDOMAIN' || edgeData.label === 'CONTAINS_SUBDOMAIN') {
@@ -2391,11 +2391,27 @@ class EASMDashboard {
                     }
                 },
 
+
                 {
                     selector: 'edge[label="RESOLVES_TO"]',
                     style: {
                         'line-color': '#4ecdc4',
                         'target-arrow-color': '#4ecdc4',
+                        'width': '1.5px',
+                        'opacity': 0.85
+                    }
+                },
+                {
+                    selector: 'edge[label="IPS_HISTORY"]',
+                    style: {
+                        'line-color': '#f59e0b',
+                        'target-arrow-color': '#f59e0b',
+                        'line-style': 'dashed',
+                        'label': 'Historical IP',
+                        'font-size': '8px',
+                        'color': '#f59e0b',
+                        'text-background-opacity': 1,
+                        'text-background-color': '#0f172a',
                         'width': '1.5px',
                         'opacity': 0.85
                     }
@@ -2579,9 +2595,9 @@ class EASMDashboard {
             } else {
                 // Single left click: select ONLY this node and show inspector
                 this.cy.nodes().removeClass('cy-selected').unselect();
-                this.cy.edges('edge[label="RESOLVES_TO"]').removeClass('ghost-active');
+                this.cy.edges('edge[label="RESOLVES_TO"], edge[label="IPS_HISTORY"]').removeClass('ghost-active');
                 node.addClass('cy-selected').select();
-                const connectedGhost = node.connectedEdges('edge[label="RESOLVES_TO"]');
+                const connectedGhost = node.connectedEdges('edge[label="RESOLVES_TO"], edge[label="IPS_HISTORY"]');
                 connectedGhost.addClass('ghost-active');
                 
                 // Open inspector immediately
@@ -2637,7 +2653,7 @@ class EASMDashboard {
             const node = event.target;
             const type = node.data('type');
             if (type === 'domain' || type === 'subdomain' || type === 'ip') {
-                const connectedGhostEdges = node.connectedEdges('edge[label="RESOLVES_TO"]');
+                const connectedGhostEdges = node.connectedEdges('edge[label="RESOLVES_TO"], edge[label="IPS_HISTORY"]');
                 connectedGhostEdges.addClass('ghost-active');
             }
         });
@@ -2646,7 +2662,7 @@ class EASMDashboard {
             const node = event.target;
             // Only remove if not selected
             if (!node.selected() && !node.hasClass('cy-selected')) {
-                this.cy.edges('edge[label="RESOLVES_TO"]').removeClass('ghost-active');
+                this.cy.edges('edge[label="RESOLVES_TO"], edge[label="IPS_HISTORY"]').removeClass('ghost-active');
             }
         });
 
@@ -2659,7 +2675,7 @@ class EASMDashboard {
             if (floatingModal) floatingModal.style.display = 'none';
 
             if (event.target === this.cy) {
-                this.cy.edges('edge[label="RESOLVES_TO"]').removeClass('ghost-active');
+                this.cy.edges('edge[label="RESOLVES_TO"], edge[label="IPS_HISTORY"]').removeClass('ghost-active');
                 this.cy.nodes().removeClass('cy-selected').unselect();
                 this.closeInspector();
             }
@@ -5083,7 +5099,7 @@ class EASMDashboard {
             if (resolvingDomains.length === 0 && elements && elements.edges) {
                 const inEdges = this.inEdges ? (this.inEdges.get(data.id) || []) : [];
                 inEdges.forEach(edgeData => {
-                    if (['RESOLVES_TO', 'HOSTS_IP', 'CONTAINS_IP'].includes(edgeData.label)) {
+                    if (['RESOLVES_TO', 'IPS_HISTORY', 'HOSTS_IP', 'CONTAINS_IP'].includes(edgeData.label)) {
                         const srcData = this.nodeIndex ? this.nodeIndex.get(edgeData.source) : null;
                         if (srcData && (srcData.type === 'domain' || srcData.type === 'subdomain')) {
                             const dName = srcData.name || srcData.label;
