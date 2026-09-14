@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "detecti-cli"
-version = "2.0.12"
+version = "2.1.0"
 description = "Modern Attack Surface Management & Threat Intelligence Engine"
 readme = "README.md"
 requires-python = ">=3.11"
