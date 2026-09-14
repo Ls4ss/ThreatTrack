@@ -180,7 +180,7 @@ class SecurityTrailsModule(BaseModule):
                         value=d,
                         source="SecurityTrails",
                         host_ip=target.split("/")[0],  # map back to target if it's an IP
-                        description=f"SecurityTrails Reverse IP mapping to {target}"
+                        metadata={"description": f"SecurityTrails Reverse IP mapping to {target}"}
                     ))
 
         elif target_type == "email":
@@ -195,7 +195,7 @@ class SecurityTrailsModule(BaseModule):
                         target=target,
                         value=d,
                         source="SecurityTrails Reverse WHOIS",
-                        description=f"Domain registered by {target}"
+                        metadata={"description": f"Domain registered by {target}"}
                     ))
 
         elif target_type == "org":
@@ -210,7 +210,7 @@ class SecurityTrailsModule(BaseModule):
                         target=target,
                         value=d,
                         source="SecurityTrails Org Recon",
-                        description=f"Asset owned by {target}"
+                        metadata={"description": f"Asset owned by {target}"}
                     ))
 
         elif target_type == "asn":
@@ -226,7 +226,7 @@ class SecurityTrailsModule(BaseModule):
                         target=target,
                         value=d,
                         source="SecurityTrails ASN Mapping",
-                        description=f"Domain hosted within AS{asn_num}"
+                        metadata={"description": f"Domain hosted within AS{asn_num}"}
                     ))
 
         elif target_type in ("domain", "subdomain"):
@@ -246,7 +246,7 @@ class SecurityTrailsModule(BaseModule):
                         target=target,
                         value=sub,
                         source="SecurityTrails",
-                        description=f"SecurityTrails discovered subdomain {sub}"
+                        metadata={"description": f"SecurityTrails discovered subdomain {sub}"}
                     ))
             
             if hist_ips:
@@ -256,12 +256,12 @@ class SecurityTrailsModule(BaseModule):
                     finding = Finding(
                         type=FindingType.HOST_INFO,
                         target=target,
+                        value=ip,
                         source="SecurityTrails Historical DNS",
                         host_ip=ip,
-                        data=HostInfoData(ip=ip, associated_fqdns=[target]),
-                        description=f"Historical Origin IP mapped for {target}"
+                        host_info=HostInfoData(ip=ip, associated_fqdns=[target]),
+                        metadata={"description": f"Historical Origin IP mapped for {target}", "tags": ["Historical IP", "WAF Bypass Candidate"]}
                     )
-                    finding.metadata["tags"] = ["Historical IP", "WAF Bypass Candidate"]
                     findings.append(finding)
 
         return findings
