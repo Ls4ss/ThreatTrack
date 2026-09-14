@@ -259,7 +259,7 @@ class SecurityTrailsModule(BaseModule):
                         value=ip,
                         source="SecurityTrails Historical DNS",
                         host_ip=ip,
-                        host_info=HostInfoData(ip=ip, associated_fqdns=[target]),
+                        host_info=HostInfoData(ip=ip, hostnames=[target]),
                         metadata={"description": f"Historical Origin IP mapped for {target}", "tags": ["Historical IP", "WAF Bypass Candidate"]}
                     )
                     findings.append(finding)
