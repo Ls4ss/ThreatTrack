@@ -4273,7 +4273,7 @@ class EASMDashboard {
                     ${v.description ? `<div class="risk-card-desc" title="${String(v.description).replace(/"/g, '&quot;')}">${v.description}</div>` : ''}
                     <div class="risk-card-links">
                         ${cveName && cveName.startsWith('CVE-') ? `<a href="https://nvd.nist.gov/vuln/detail/${cveName}" target="_blank" rel="noopener" class="risk-link-btn"><i data-lucide="external-link" class="badge-icon"></i> NVD Details</a>` : ''}
-                        ${v.id ? `<button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${v.id}')"><i data-lucide="crosshair" class="badge-icon"></i> Focus</button>` : ''}
+                        ${v.id ? `<button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${v.id}')"><i data-lucide="focus" class="badge-icon"></i> Focus</button>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -4315,7 +4315,7 @@ class EASMDashboard {
                     ${v.description ? `<div class="risk-card-desc" title="${String(v.description).replace(/"/g, '&quot;')}">${v.description}</div>` : ''}
                     <div class="risk-card-links">
                         <a href="https://nvd.nist.gov/vuln/detail/${cveName}" target="_blank" rel="noopener" class="risk-link-btn"><i data-lucide="external-link" class="badge-icon"></i> NVD Details</a>
-                        ${v.id ? `<button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${v.id}')"><i data-lucide="crosshair" class="badge-icon"></i> Focus</button>` : ''}
+                        ${v.id ? `<button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${v.id}')"><i data-lucide="focus" class="badge-icon"></i> Focus</button>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -4349,7 +4349,7 @@ class EASMDashboard {
                     </div>` : ''}
                     <div class="risk-card-links">
                         <a href="${exp.url}" target="_blank" rel="noopener" class="risk-link-btn primary"><i data-lucide="external-link" class="badge-icon"></i> View PoC</a>
-                        ${exp.vuln_id ? `<button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${exp.vuln_id}')"><i data-lucide="crosshair" class="badge-icon"></i> Focus Vuln</button>` : ''}
+                        ${exp.vuln_id ? `<button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${exp.vuln_id}')"><i data-lucide="focus" class="badge-icon"></i> Focus Vuln</button>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -4407,7 +4407,7 @@ class EASMDashboard {
                     </div>
                     ${(srv.product || version) ? `<div style="font-size: 0.78rem; color: #aaa; margin: 3px 0;">${srv.product || ''} ${version}</div>` : ''}
                     ${serviceLinkUrl ? `<div class="risk-card-links"><a href="${serviceLinkUrl}" target="_blank" rel="noopener" class="risk-link-btn"><i data-lucide="link" class="badge-icon"></i> ${serviceLinkUrl}</a></div>` : ''}
-                    ${srv.id ? `<div class="risk-card-links" style="margin-top: 2px; border-top: none;"><button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${srv.id}')"><i data-lucide="crosshair" class="badge-icon"></i> Focus Service</button></div>` : ''}
+                    ${srv.id ? `<div class="risk-card-links" style="margin-top: 2px; border-top: none;"><button type="button" class="risk-focus-btn" onclick="window.dashboard.focusNode('${srv.id}')"><i data-lucide="focus" class="badge-icon"></i> Focus Service</button></div>` : ''}
                 </div>`;
             }).join('');
 
@@ -4948,7 +4948,7 @@ class EASMDashboard {
                     const ipsBadges = resolvedIps.map(item => `
                         <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #60a5fa; margin-right: 4px; margin-bottom: 2px;">
                             ${item.ip}
-                            <button type="button" class="risk-focus-btn" style="margin: 0; padding: 1px 4px; font-size: 0.65rem; background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: none; border-radius: 2px; cursor: pointer;" onclick="event.stopPropagation(); window.dashboard.focusNode('${item.id}')" title="Focus IP in graph"><i data-lucide="crosshair" style="width: 10px; height: 10px;"></i></button>
+                            <button type="button" class="risk-focus-btn" style="margin: 0; padding: 1px 4px; font-size: 0.65rem; background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: none; border-radius: 2px; cursor: pointer;" onclick="event.stopPropagation(); window.dashboard.focusNode('${item.id}')" title="Focus IP in graph"><i data-lucide="focus" style="width: 10px; height: 10px;"></i></button>
                         </span>
                     `).join('');
 
@@ -5123,7 +5123,7 @@ class EASMDashboard {
 
                     const focusBtn = item.id ? `
                         <button type="button" class="risk-focus-btn" style="margin: 0; padding: 2px 5px; font-size: 0.68rem; background: rgba(78, 205, 196, 0.2); color: #4ecdc4; border-color: rgba(78, 205, 196, 0.4); border-radius: 3px; border: 1px solid;" onclick="event.stopPropagation(); window.dashboard.focusNode('${item.id}')" title="Focus domain in graph">
-                            <i data-lucide="crosshair" style="width: 10px; height: 10px;"></i>
+                            <i data-lucide="focus" style="width: 10px; height: 10px;"></i>
                         </button>
                     ` : '';
 
@@ -5369,7 +5369,7 @@ class EASMDashboard {
                             <span style="color: #00d4ff; font-weight: bold; font-family: monospace;">${hIp}</span>
                             ${hOrg ? `<span style="color: #94a3b8; font-size: 0.78rem; margin-left: 6px;">${hOrg}</span>` : ''}
                         </div>
-                        <button type="button" class="risk-focus-btn" style="margin: 0; padding: 2px 6px; font-size: 0.72rem;" onclick="window.dashboard.focusNode('${h.id}')"><i data-lucide="crosshair" class="badge-icon"></i> Focus</button>
+                        <button type="button" class="risk-focus-btn" style="margin: 0; padding: 2px 6px; font-size: 0.72rem;" onclick="window.dashboard.focusNode('${h.id}')"><i data-lucide="focus" class="badge-icon"></i> Focus</button>
                     </div>`;
                 }).join('');
             } else if (data.ip) {
@@ -5392,7 +5392,7 @@ class EASMDashboard {
                             <span style="color: #cbd5e1; font-size: 0.82rem; margin-left: 6px;">${sDesc}</span>
                             ${s.ip ? `<span style="color: #64748b; font-size: 0.75rem; margin-left: 4px;">(${s.ip})</span>` : ''}
                         </div>
-                        <button type="button" class="risk-focus-btn" style="margin: 0; padding: 2px 6px; font-size: 0.72rem;" onclick="window.dashboard.focusNode('${s.id}')"><i data-lucide="crosshair" class="badge-icon"></i> Focus</button>
+                        <button type="button" class="risk-focus-btn" style="margin: 0; padding: 2px 6px; font-size: 0.72rem;" onclick="window.dashboard.focusNode('${s.id}')"><i data-lucide="focus" class="badge-icon"></i> Focus</button>
                     </div>`;
                 }).join('');
             } else if (data.port) {
