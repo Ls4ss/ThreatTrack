@@ -2310,7 +2310,11 @@ class EASMDashboard {
                         'curve-style': 'straight',
                         'label': 'data(label)',
                         'font-size': '7px',
-                        'color': '#888888',
+                        'color': '#ffffff',
+                        'text-background-color': '#000000',
+                        'text-background-opacity': 0.8,
+                        'text-background-shape': 'roundrectangle',
+                        'text-background-padding': '2px',
                         'text-rotation': 'autorotate'
                     }
                 },
@@ -2407,11 +2411,7 @@ class EASMDashboard {
                         'line-color': '#f59e0b',
                         'target-arrow-color': '#f59e0b',
                         'line-style': 'dashed',
-                        'label': 'Historical IP',
-                        'font-size': '8px',
-                        'color': '#f59e0b',
-                        'text-background-opacity': 1,
-                        'text-background-color': '#0f172a',
+                        'label': 'HISTORICAL_IP',
                         'width': '1.5px',
                         'opacity': 0.85
                     }
